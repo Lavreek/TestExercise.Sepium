@@ -12,51 +12,12 @@ class Database extends PDOConnect
         }
     }
 
-    public function usersCreate(string $name, string $email, string $password) : array
+    public function insertQuery(string $table, array $keys) : string
     {
-        $connection = $this->getConnection();
+        $query_keys = implode('`, `', $keys);
+        $query_values = implode(', :', $keys);
 
-        try {
-            $connection->beginTransaction();
-
-            $request = $connection->prepare(
-                "INSERT INTO `users` (`name`, `email`, `password`, `created_at`)" .
-                " VALUES (:name, :email, :password, :created_at)"
-            );
-
-            $request->execute([
-                'name' => $name,
-                'email' => $email,
-                'password' => $password,
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
-
-            if ($connection->inTransaction()) {
-                $connection->commit();
-            }
-
-            return [
-                'message' => 'Пользователь успешно добавлен',
-                'status' => '200',
-            ];
-
-        } catch (PDOException $exception) {
-            if ($connection->inTransaction()) {
-                $connection->rollBack();
-            }
-
-            Logger::write($exception);
-
-            return [
-                'message' => 'При добавлении произошла ошибка',
-                'status' => '500',
-                'error' => [
-                    'code' => $connection->errorCode(),
-                    'info' => $connection->errorInfo(),
-                    'message' => $exception->getMessage()
-                ]
-            ];
-        }
+        return "INSERT INTO $table (`{$query_keys}`) VALUES (:{$query_values})";
     }
 
     public function getRequest(string $query, array $parameters = []) : array

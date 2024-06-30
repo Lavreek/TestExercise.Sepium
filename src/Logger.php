@@ -27,10 +27,15 @@ final class Logger
 
     private function createConfiguration() : mixed
     {
-        if (!file_exists(PROJECT_LOG_PATH)) {
-            mkdir(dirname(PROJECT_LOG_PATH), recursive: true);
+        $directory = PROJECT_LOG_PATH;
+        $filepath = $directory . self::FILENAME;
 
-            touch(PROJECT_LOG_PATH . self::FILENAME);
+        if (!file_exists($filepath)) {
+            if (!is_dir($directory)) {
+                mkdir($directory, recursive: true);
+            }
+
+            touch($filepath);
         }
 
         return $this;

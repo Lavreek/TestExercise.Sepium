@@ -6,11 +6,21 @@ final class Model extends ModelHandler
     public function usersCreate()
     {
         $request = new UserRequest();
-        $this->setResponse(
-            $this->database->usersCreate(
-                $request->getName(), $request->getEmail(), $request->getPassword()
-            )
+
+        $parameters = $request->toArray() + [
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $request = $this->database->getRequest(
+            $this->database->insertQuery('users', array_keys($parameters)),
+            $parameters
         );
+
+        if (!isset($request['error'])) {
+            $request['message'] = "Пользователь успешно добавлен.";
+        }
+
+        $this->setResponse( $request );
     }
 
     #[Routing(path: '/users/table/')]
@@ -44,11 +54,9 @@ final class Model extends ModelHandler
         $this->setResponse(
             $this->database->getRequest(
             "UPDATE `users` SET `name` = :name, `email` = :email, `password` = :password" .
-                " WHERE id = :id", [
-                    'name' => $request->getName(),
-                    'email' => $request->getEmail(),
-                    'password' => $request->getPassword(),
-                    'id' => (int)$request->getId()
+                " WHERE id = :id",
+            $request->toArray() + [
+                'id' => (int)$_POST['id']
             ])
         );
     }

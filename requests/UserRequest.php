@@ -2,8 +2,6 @@
 
 class UserRequest extends RequestHandler
 {
-    protected $id = 'NULL';
-
     protected $name;
 
     protected $email;
@@ -14,11 +12,6 @@ class UserRequest extends RequestHandler
     {
         $this->fillProperty();
         $this->validate();
-    }
-
-    public function getId()
-    {
-        return $this->id;
     }
 
     public function getName()
