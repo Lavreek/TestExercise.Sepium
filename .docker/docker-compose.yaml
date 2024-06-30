@@ -1,0 +1,50 @@
+version: '3.8'
+
+networks:
+  sepium:
+    name: sepium
+    driver: bridge
+    external: true
+
+services:
+  host:
+    container_name: ${PROJECT_NAME}-host
+    build:
+      context: .
+      dockerfile: Dockerfile_host
+    networks:
+      - sepium
+    volumes:
+      - ../:/var/www/html
+    ports:
+      - "80:80"
+      - "443:443"
+
+  fpm:
+    container_name: ${PROJECT_NAME}-fpm
+    build:
+      context: .
+      dockerfile: Dockerfile_fpm
+    networks:
+      - sepium
+    volumes:
+      - ../:/var/www/html
+    ports:
+      - "9000:9000"
+
+  database:
+    container_name: ${PROJECT_NAME}-database
+    build:
+      context: .
+      dockerfile: Dockerfile_database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: --wait_timeout=3600
+    networks:
+      - sepium
+    ports:
+      - "3306:3306"

@@ -1,0 +1,183 @@
+<div class="d-flex flex-column row-gap-5">
+    <form class="text-end" id="userCreate" method="post">
+        <input name="name" placeholder="name" type="text">
+        <input name="email" placeholder="email" type="email">
+        <input name="password" placeholder="password" type="password">
+        <button type="submit">Создать</button>
+    </form>
+    <form class="hidden text-end" id="userEdit" method="post">
+        <div id="userEditInputs"></div>
+        <button type="submit">Сохранить</button>
+        <button type="button" onclick="closeForm()">Закрыть</button>
+    </form>
+    <table class="w-100">
+        <thead class="bg-secondary">
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">name</th>
+                <th scope="col">email</th>
+                <th scope="col">created_at</th>
+                <th scope="col">password</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="usersBody">
+        </tbody>
+    </table>
+</div>
+<script>
+    function closeForm() {
+        let form = document.getElementById('userEdit');
+        form.classList.add('hidden');
+    }
+</script>
+<script>
+    const tbody = document.getElementById('usersBody');
+
+    async function getUsers() {
+        try {
+            tbody.innerHTML = '';
+
+            await fetch("/users/table/", {
+                method: "GET",
+            })
+                .then(response => response.json())
+                .then(response => {
+                    for (let i = 0; i < response.result.length; i++) {
+                        let tr = document.createElement('tr');
+                        tr.setAttribute('users-id', response.result[i].id)
+
+                        for (let key in response.result[i]) {
+                            let td = document.createElement('td');
+                            td.innerHTML = response.result[i][key];
+
+                            tr.append(td);
+                        }
+                        let te = document.createElement('td');
+                        let td = document.createElement('td');
+
+                        let tedit = document.createElement('a');
+                        tedit.innerHTML = 'Редактировать';
+                        tedit.className = 'cursor-pointer'
+                        tedit.addEventListener('click', () => {
+                            let form = document.getElementById('userEdit');
+                            form.classList.remove('hidden');
+                            let inputs = document.getElementById('userEditInputs');
+                            inputs.innerHTML = '';
+
+                            let name = document.createElement('input');
+                            name.name = 'name';
+                            name.placeholder = 'name';
+                            name.type = 'text';
+                            name.value = response.result[i].name;
+
+                            let email = document.createElement('input');
+                            email.name = 'email';
+                            email.placeholder = 'email';
+                            email.type = 'email';
+                            email.value = response.result[i].email;
+
+                            let password = document.createElement('input');
+                            password.name = 'password';
+                            password.placeholder = 'password';
+                            password.type = 'text';
+                            password.value = response.result[i].password;
+
+                            let id = document.createElement('input');
+                            id.name = 'id';
+                            id.type = 'hidden';
+                            id.value = response.result[i].id;
+
+                            inputs.prepend(name, email, password, id)
+                        })
+
+                        let tdelete = document.createElement('a');
+                        tdelete.innerHTML = 'удалить';
+                        tdelete.className = 'cursor-pointer';
+                        tdelete.addEventListener('click', () => {
+                            try {
+                                fetch("/users/delete/", {
+                                    method: "POST",
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id : response.result[i].id,
+                                    }),
+                                }).then(() => {
+                                    getUsers()
+                                });
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        })
+
+                        te.append(tedit);
+                        td.append(tdelete);
+
+                        tr.append(te, td);
+                        tbody.append(tr);
+                    }
+                })
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        getUsers();
+    });
+</script>
+
+<script>
+    const formcreate = document.querySelector('#userCreate');
+
+    async function send() {
+        const formData = new FormData(formcreate);
+
+        try {
+            await fetch("/users/create/", {
+                method: "POST",
+                body: formData,
+            })
+                .then(() => {
+                    getUsers()
+                });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    formcreate.addEventListener("submit", (event) => {
+        event.preventDefault();
+        send();
+    });
+</script>
+
+<script>
+    const formedit = document.querySelector('#userEdit');
+
+    async function edit() {
+        const formData = new FormData(formedit);
+
+        try {
+            await fetch("/users/edit/", {
+                method: "POST",
+                body: formData,
+            })
+                .then(() => {
+                    getUsers()
+                });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    formedit.addEventListener("submit", (event) => {
+        event.preventDefault();
+        edit();
+        closeForm();
+    });
+</script>
