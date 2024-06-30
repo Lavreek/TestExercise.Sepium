@@ -6,6 +6,8 @@ abstract class ViewHandler
 
     private Model $model;
 
+    private int $status_code = 200;
+
     public function __construct(Model $model)
     {
         $this->model = $model;
@@ -26,6 +28,10 @@ abstract class ViewHandler
     protected function response() : bool|string
     {
         if (empty($this->model->getResponse())) {
+            if ($this->status_code !== 200) {
+                return $this->renderTemplate("templates/{$this->status_code}.html");
+            }
+
             return $this->renderTemplate('templates/404.html');
 
         } else {

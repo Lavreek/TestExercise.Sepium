@@ -4,7 +4,8 @@
 class Routing
 {
     public function __construct(
-        public string $path
+        public string $path,
+        public array $roles = []
     )
     {
 

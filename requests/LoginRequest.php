@@ -1,11 +1,7 @@
 <?php
 
-class UserRequest extends RequestHandler
+class LoginRequest extends RequestHandler
 {
-    protected $id = 'NULL';
-
-    protected $name;
-
     protected $email;
 
     protected $password;
@@ -14,16 +10,6 @@ class UserRequest extends RequestHandler
     {
         $this->fillProperty();
         $this->validate();
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getName()
-    {
-        return $this->name;
     }
 
     public function getEmail()

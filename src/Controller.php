@@ -6,6 +6,11 @@ final class Controller
 
     private View $view;
 
+    public function __construct()
+    {
+        new Auth();
+    }
+
     public function createModel(): void
     {
         $this->model = new Model();
